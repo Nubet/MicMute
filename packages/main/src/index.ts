@@ -8,6 +8,7 @@ import {autoUpdater} from './modules/AutoUpdater.js';
 import {allowInternalOrigins} from './modules/BlockNotAllowdOrigins.js';
 import {allowExternalUrls} from './modules/ExternalUrls.js';
 import {microphoneMuteControl} from './modules/MicrophoneMuteControl.js';
+import {trayModule} from './modules/TrayModule.js';
 
 
 export async function initApp(initConfig: AppInitConfig) {
@@ -18,6 +19,7 @@ export async function initApp(initConfig: AppInitConfig) {
     .init(hardwareAccelerationMode({enable: false}))
     .init(autoUpdater())
     .init(microphoneMuteControl())
+    .init(trayModule())
 
     // Install DevTools extension if needed
     // .init(chromeDevToolsExtension({extension: 'VUEJS3_DEVTOOLS'}))
