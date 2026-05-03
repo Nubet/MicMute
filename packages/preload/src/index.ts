@@ -6,4 +6,12 @@ function send(channel: string, message: string) {
   return ipcRenderer.invoke(channel, message);
 }
 
-export {sha256sum, versions, send};
+function getMicrophoneMuteState() {
+  return ipcRenderer.invoke('microphone:getMuteState');
+}
+
+function setMicrophoneMuteState(muted: boolean) {
+  return ipcRenderer.invoke('microphone:setMuteState', muted);
+}
+
+export {sha256sum, versions, send, getMicrophoneMuteState, setMicrophoneMuteState};
