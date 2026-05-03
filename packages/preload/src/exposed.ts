@@ -1,13 +1,16 @@
-import * as exports from './index.js';
 import {contextBridge} from 'electron';
+import {
+  getMicrophoneMuteState,
+  setMicrophoneMuteState,
+} from './index.js';
+import type {SystemMicrophoneApi} from '@app/shared';
 
-const isExport = (key: string): key is keyof typeof exports => Object.hasOwn(exports, key);
+const electronApi: SystemMicrophoneApi = {
+  getMicrophoneMuteState,
+  setMicrophoneMuteState,
+};
 
-for (const exportsKey in exports) {
-  if (isExport(exportsKey)) {
-    contextBridge.exposeInMainWorld(btoa(exportsKey), exports[exportsKey]);
-  }
-}
+contextBridge.exposeInMainWorld('electronApi', electronApi);
 
 // Re-export for tests
 export * from './index.js';

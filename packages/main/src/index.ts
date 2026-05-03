@@ -7,7 +7,7 @@ import {hardwareAccelerationMode} from './modules/HardwareAccelerationModule.js'
 import {autoUpdater} from './modules/AutoUpdater.js';
 import {allowInternalOrigins} from './modules/BlockNotAllowdOrigins.js';
 import {allowExternalUrls} from './modules/ExternalUrls.js';
-import {microphoneMuteControl} from './modules/MicrophoneMuteControl.js';
+import {systemMicrophoneModule} from './modules/SystemMicrophoneModule.js';
 import {trayModule} from './modules/TrayModule.js';
 
 
@@ -18,7 +18,7 @@ export async function initApp(initConfig: AppInitConfig) {
     .init(terminateAppOnLastWindowClose())
     .init(hardwareAccelerationMode({enable: false}))
     .init(autoUpdater())
-    .init(microphoneMuteControl())
+    .init(systemMicrophoneModule())
     .init(trayModule())
 
     // Install DevTools extension if needed

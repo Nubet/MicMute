@@ -1,9 +1,5 @@
-import {ipcMain} from 'electron';
-import {execFile as execFileCallback} from 'node:child_process';
-import {promisify} from 'node:util';
-import type {AppModule} from '../AppModule.js';
-
-const execFile = promisify(execFileCallback);
+import type {MicrophoneMutePort} from '../../../domain/audio/MicrophoneMutePort.js';
+import {parseBooleanFromPowerShellOutput, runPowerShellScript} from './windowsPowerShell.js';
 
 const windowsMicControlCode = String.raw`
 Add-Type -TypeDefinition @"
@@ -59,7 +55,6 @@ public interface IAudioEndpointVolume {
 public static class WindowsMicMute {
   private const int EDataFlowCapture = 1;
   private const int ERoleConsole = 0;
-  private const int ERoleMultimedia = 1;
   private const int ClsCtxAll = 23;
 
   private static IAudioEndpointVolume GetEndpointVolume() {
@@ -110,81 +105,16 @@ public static class WindowsMicMute {
 "@ -Language CSharp
 `;
 
-async function runPowerShellScript(script: string): Promise<string> {
-  const prologue = "$ProgressPreference='SilentlyContinue'; $ErrorActionPreference='Stop';";
-  const encodedCommand = Buffer.from(`${prologue}\n${script}`, 'utf16le').toString('base64');
-  const {stdout, stderr} = await execFile('powershell.exe', [
-    '-NoProfile',
-    '-NonInteractive',
-    '-ExecutionPolicy',
-    'Bypass',
-    '-EncodedCommand',
-    encodedCommand,
-  ]);
-
-  return `${stdout}\n${stderr}`.trim();
-}
-
-function parseBooleanFromPowerShellOutput(output: string): boolean {
-  const matches = output.match(/\b(true|false)\b/gi);
-
-  if (!matches || matches.length === 0) {
-    throw new Error(`Could not parse PowerShell output: ${output}`);
-  }
-
-  return matches[matches.length - 1].toLowerCase() === 'true';
-}
-
-async function getWindowsMuteState(): Promise<boolean> {
-  const script = `${windowsMicControlCode}\n[WindowsMicMute]::GetMute()`;
-  const output = await runPowerShellScript(script);
-  return parseBooleanFromPowerShellOutput(output);
-}
-
-async function setWindowsMuteState(muted: boolean): Promise<boolean> {
-  const script = `${windowsMicControlCode}\n[WindowsMicMute]::SetMute($${muted ? 'true' : 'false'})`;
-  const output = await runPowerShellScript(script);
-  return parseBooleanFromPowerShellOutput(output);
-}
-
-class MicrophoneMuteControl implements AppModule {
-  enable(): void {
-    ipcMain.handle('microphone:getMuteState', async () => {
-      return this.getMuteState();
-    });
-
-    ipcMain.handle('microphone:setMuteState', async (_, muted: boolean) => {
-      return this.setMuteState(muted);
-    });
-  }
-
+export class WindowsMicrophoneMutePort implements MicrophoneMutePort {
   async getMuteState(): Promise<boolean> {
-    if (process.platform === 'win32') {
-      return getWindowsMuteState();
-    }
-
-    if (process.platform === 'linux') {
-      const {stdout} = await execFile('pactl', ['get-source-mute', '@DEFAULT_SOURCE@']);
-      return stdout.toLowerCase().includes('yes');
-    }
-
-    throw new Error('System microphone mute is not supported on this platform yet.');
+    const script = `${windowsMicControlCode}\n[WindowsMicMute]::GetMute()`;
+    const output = await runPowerShellScript(script);
+    return parseBooleanFromPowerShellOutput(output);
   }
 
   async setMuteState(muted: boolean): Promise<boolean> {
-    if (process.platform === 'win32') {
-      return setWindowsMuteState(muted);
-    }
-
-    if (process.platform === 'linux') {
-      await execFile('pactl', ['set-source-mute', '@DEFAULT_SOURCE@', muted ? '1' : '0']);
-      return this.getMuteState();
-    }
-
-    throw new Error('System microphone mute is not supported on this platform yet.');
+    const script = `${windowsMicControlCode}\n[WindowsMicMute]::SetMute($${muted ? 'true' : 'false'})`;
+    const output = await runPowerShellScript(script);
+    return parseBooleanFromPowerShellOutput(output);
   }
-}
-
-export function microphoneMuteControl() {
-  return new MicrophoneMuteControl();
 }
