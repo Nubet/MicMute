@@ -1,7 +1,8 @@
 import {useCallback, useEffect, useState} from 'react';
 import {
   getSystemMicrophoneMuteState,
-  setSystemMicrophoneMuteState,
+  onSystemMicrophoneMuteStateChanged,
+  toggleSystemMicrophoneMuteState,
 } from '../../infrastructure/electron/systemMicrophoneApi';
 
 function toErrorMessage(error: unknown): string {
@@ -27,7 +28,7 @@ export function useSystemMicrophoneMute() {
     setIsMutePending(true);
 
     try {
-      const nextMuted = await setSystemMicrophoneMuteState(!isMuted);
+      const nextMuted = await toggleSystemMicrophoneMuteState();
       setIsMuted(nextMuted);
       setMuteError(null);
     } catch (error) {
@@ -40,7 +41,7 @@ export function useSystemMicrophoneMute() {
     } finally {
       setIsMutePending(false);
     }
-  }, [isMuted, refreshMuteState]);
+  }, [refreshMuteState]);
 
   useEffect(() => {
     const loadMuteState = async () => {
@@ -54,12 +55,13 @@ export function useSystemMicrophoneMute() {
 
     void loadMuteState();
 
-    const interval = window.setInterval(() => {
-      void loadMuteState();
-    }, 1000);
+    const unsubscribe = onSystemMicrophoneMuteStateChanged((muted) => {
+      setIsMuted(muted);
+      setMuteError(null);
+    });
 
     return () => {
-      window.clearInterval(interval);
+      unsubscribe();
     };
   }, [refreshMuteState]);
 
