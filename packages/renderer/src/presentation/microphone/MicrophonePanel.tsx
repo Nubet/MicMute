@@ -2,15 +2,11 @@ import {useEffect, useMemo, useState} from 'react';
 import type {ChangeEvent, KeyboardEvent as ReactKeyboardEvent} from 'react';
 import {
   AudioLines,
-  CircleHelp,
-  Info,
   Keyboard,
   Mic,
   MicOff,
+  Bell,
   Play,
-  Plug,
-  Settings,
-  SlidersHorizontal,
 } from 'lucide-react';
 
 type Props = {
@@ -26,10 +22,23 @@ type Props = {
   startupSettings: {supported: boolean, openAtLogin: boolean};
   isSavingStartup: boolean;
   startupError: string | null;
+  notificationSettings: {
+    showTrayNotificationOnMuteChange: boolean;
+    playSoundOnMuteToggle: boolean;
+  };
+  isSavingNotificationSettings: boolean;
+  notificationSettingsError: string | null;
   onMicrophoneChange: (deviceId: string) => Promise<void>;
   onToggleMute: () => Promise<void>;
   onSaveShortcut: (shortcut: string | null) => Promise<string | null>;
   onToggleStartupOpenAtLogin: (enabled: boolean) => Promise<{supported: boolean, openAtLogin: boolean}>;
+  onPatchNotificationSettings: (patch: {
+    showTrayNotificationOnMuteChange?: boolean;
+    playSoundOnMuteToggle?: boolean;
+  }) => Promise<{
+    showTrayNotificationOnMuteChange: boolean;
+    playSoundOnMuteToggle: boolean;
+  }>;
 };
 
 function keyToAccelerator(key: string): string {
@@ -82,12 +91,16 @@ export function MicrophonePanel({
   startupSettings,
   isSavingStartup,
   startupError,
+  notificationSettings,
+  isSavingNotificationSettings,
+  notificationSettingsError,
   onMicrophoneChange,
   onToggleMute,
   onSaveShortcut,
   onToggleStartupOpenAtLogin,
+  onPatchNotificationSettings,
 }: Props) {
-  const [activeSection, setActiveSection] = useState<'audio' | 'shortcuts' | 'startup'>('audio');
+  const [activeSection, setActiveSection] = useState<'audio' | 'shortcuts' | 'startup' | 'notifications'>('audio');
   const [isCapturingShortcut, setIsCapturingShortcut] = useState(false);
   const [draftShortcut, setDraftShortcut] = useState<string | null>(shortcut);
 
@@ -140,20 +153,6 @@ export function MicrophonePanel({
             <p className="window-caption">Microphone Utility</p>
             <h1>Input Control</h1>
           </div>
-          <div className="window-actions">
-            <button type="button" className="toolbar-button">
-              <span className="icon" aria-hidden="true"><Settings size={14} strokeWidth={1.8} /></span>
-              <span>Settings</span>
-            </button>
-            <button type="button" className="toolbar-button">
-              <span className="icon" aria-hidden="true"><SlidersHorizontal size={14} strokeWidth={1.8} /></span>
-              <span>Preferences</span>
-            </button>
-            <button type="button" className="toolbar-button">
-              <span className="icon" aria-hidden="true"><CircleHelp size={14} strokeWidth={1.8} /></span>
-              <span>Help</span>
-            </button>
-          </div>
         </header>
 
         <div className="workspace">
@@ -165,10 +164,6 @@ export function MicrophonePanel({
             >
               <span className="icon" aria-hidden="true"><AudioLines size={14} strokeWidth={1.8} /></span>
               <span>Audio</span>
-            </button>
-            <button type="button" className="nav-item">
-              <span className="icon" aria-hidden="true"><Plug size={14} strokeWidth={1.8} /></span>
-              <span>Devices</span>
             </button>
             <button
               type="button"
@@ -186,9 +181,13 @@ export function MicrophonePanel({
               <span className="icon" aria-hidden="true"><Play size={14} strokeWidth={1.8} /></span>
               <span>Startup</span>
             </button>
-            <button type="button" className="nav-item">
-              <span className="icon" aria-hidden="true"><Info size={14} strokeWidth={1.8} /></span>
-              <span>About</span>
+            <button
+              type="button"
+              className={`nav-item ${activeSection === 'notifications' ? 'active' : ''}`}
+              onClick={() => setActiveSection('notifications')}
+            >
+              <span className="icon" aria-hidden="true"><Bell size={14} strokeWidth={1.8} /></span>
+              <span>Notifications</span>
             </button>
           </aside>
 
@@ -297,7 +296,7 @@ export function MicrophonePanel({
                   {shortcutError ? <p className="error-text">{shortcutError}</p> : null}
                 </div>
               </>
-            ) : (
+            ) : activeSection === 'startup' ? (
               <>
                 <div className="section-header">
                   <h2>Startup</h2>
@@ -317,6 +316,40 @@ export function MicrophonePanel({
                     </button>
                   </div>
                   {startupError ? <p className="error-text">{startupError}</p> : null}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="section-header">
+                  <h2>Notifications</h2>
+                </div>
+
+                <div className="shortcut-card">
+                  <label className="toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings.showTrayNotificationOnMuteChange}
+                      onChange={(event) => {
+                        void onPatchNotificationSettings({showTrayNotificationOnMuteChange: event.target.checked});
+                      }}
+                      disabled={isSavingNotificationSettings}
+                    />
+                    <span>Show a desktop notification when microphone is muted or unmuted</span>
+                  </label>
+
+                  <label className="toggle-row">
+                    <input
+                      type="checkbox"
+                      checked={notificationSettings.playSoundOnMuteToggle}
+                      onChange={(event) => {
+                        void onPatchNotificationSettings({playSoundOnMuteToggle: event.target.checked});
+                      }}
+                      disabled={isSavingNotificationSettings}
+                    />
+                    <span>Play a short sound when microphone state changes</span>
+                  </label>
+
+                  {notificationSettingsError ? <p className="error-text">{notificationSettingsError}</p> : null}
                 </div>
               </>
             )}
