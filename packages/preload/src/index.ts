@@ -47,6 +47,17 @@ function setStartupOpenAtLogin(enabled: boolean) {
   return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setStartupOpenAtLogin, enabled);
 }
 
+function getNotificationSettings() {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.getNotificationSettings);
+}
+
+function updateNotificationSettings(patch: {
+  showTrayNotificationOnMuteChange?: boolean;
+  playSoundOnMuteToggle?: boolean;
+}) {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.updateNotificationSettings, patch);
+}
+
 export {
   sha256sum,
   versions,
@@ -59,4 +70,6 @@ export {
   setMicrophoneToggleShortcut,
   getStartupSettings,
   setStartupOpenAtLogin,
+  getNotificationSettings,
+  updateNotificationSettings,
 };
