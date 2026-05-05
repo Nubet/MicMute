@@ -23,6 +23,14 @@ function setMicrophoneToggleShortcut(accelerator: string | null) {
   return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setToggleShortcut, accelerator);
 }
 
+function getStartupSettings() {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.getStartupSettings);
+}
+
+function setStartupOpenAtLogin(enabled: boolean) {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setStartupOpenAtLogin, enabled);
+}
+
 export {
   sha256sum,
   versions,
@@ -31,4 +39,6 @@ export {
   setMicrophoneMuteState,
   getMicrophoneToggleShortcut,
   setMicrophoneToggleShortcut,
+  getStartupSettings,
+  setStartupOpenAtLogin,
 };
