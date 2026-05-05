@@ -21,3 +21,11 @@ export async function getMicrophoneToggleShortcut(): Promise<string | null> {
 export async function setMicrophoneToggleShortcut(accelerator: string | null): Promise<string | null> {
   return getElectronApi().setMicrophoneToggleShortcut(accelerator);
 }
+
+export async function getStartupSettings(): Promise<{supported: boolean, openAtLogin: boolean}> {
+  return getElectronApi().getStartupSettings();
+}
+
+export async function setStartupOpenAtLogin(enabled: boolean): Promise<{supported: boolean, openAtLogin: boolean}> {
+  return getElectronApi().setStartupOpenAtLogin(enabled);
+}
