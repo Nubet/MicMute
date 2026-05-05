@@ -3,10 +3,13 @@ import {resolve} from 'node:path';
 import {app, BrowserWindow, Menu, Tray, nativeImage} from 'electron';
 import type {AppModule} from '../AppModule.js';
 import type {ModuleContext} from '../ModuleContext.js';
+import {getSystemMicrophoneMuteService} from '../application/audio/getSystemMicrophoneMuteService.js';
 
 class TrayModule implements AppModule {
   #tray: Tray | null = null;
   #isQuitting = false;
+  #mutePollInterval: NodeJS.Timeout | null = null;
+  #lastMutedState: boolean | null = null;
 
   async enable({app}: ModuleContext): Promise<void> {
     await app.whenReady();
@@ -14,6 +17,7 @@ class TrayModule implements AppModule {
 
     app.on('before-quit', () => {
       this.#isQuitting = true;
+      this.#stopMuteStateSync();
     });
 
     app.on('browser-window-created', (_, window) => {
@@ -23,6 +27,8 @@ class TrayModule implements AppModule {
     for (const window of BrowserWindow.getAllWindows()) {
       this.#wireWindowEvents(window);
     }
+
+    this.#startMuteStateSync();
   }
 
   #wireWindowEvents(window: BrowserWindow): void {
@@ -50,7 +56,7 @@ class TrayModule implements AppModule {
       return;
     }
 
-    const trayIconPath = this.#resolveTrayIconPath();
+    const trayIconPath = this.#resolveTrayIconPath(false);
     const trayImage = trayIconPath
       ? nativeImage.createFromPath(trayIconPath)
       : nativeImage.createEmpty();
@@ -93,19 +99,71 @@ class TrayModule implements AppModule {
     window.focus();
   }
 
-  #resolveTrayIconPath(): string | null {
+  #startMuteStateSync(): void {
+    void this.#syncTrayIconWithMuteState();
+
+    this.#mutePollInterval = setInterval(() => {
+      void this.#syncTrayIconWithMuteState();
+    }, 1000);
+  }
+
+  #stopMuteStateSync(): void {
+    if (!this.#mutePollInterval) {
+      return;
+    }
+
+    clearInterval(this.#mutePollInterval);
+    this.#mutePollInterval = null;
+  }
+
+  async #syncTrayIconWithMuteState(): Promise<void> {
+    if (!this.#tray || this.#isQuitting) {
+      return;
+    }
+
+    try {
+      const muted = await getSystemMicrophoneMuteService().getMuteState();
+
+      if (this.#lastMutedState === muted) {
+        return;
+      }
+
+      this.#lastMutedState = muted;
+      this.#applyTrayIcon(muted);
+    } catch {
+      this.#lastMutedState = null;
+      this.#applyTrayIcon(false);
+    }
+  }
+
+  #applyTrayIcon(muted: boolean): void {
+    if (!this.#tray) {
+      return;
+    }
+
+    const trayIconPath = this.#resolveTrayIconPath(muted);
+
+    if (!trayIconPath) {
+      return;
+    }
+
+    this.#tray.setImage(nativeImage.createFromPath(trayIconPath));
+  }
+
+  #resolveTrayIconPath(muted: boolean): string | null {
+    const iconName = muted ? 'tray-muted.ico' : 'tray-idle.ico';
     const candidates = [
-      resolve(process.cwd(), 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), 'buildResources', 'icons', iconName),
       resolve(process.cwd(), 'buildResources', 'icon.png'),
-      resolve(process.cwd(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', 'buildResources', 'icons', iconName),
       resolve(process.cwd(), '..', 'buildResources', 'icon.png'),
-      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', iconName),
       resolve(process.cwd(), '..', '..', 'buildResources', 'icon.png'),
-      resolve(app.getAppPath(), 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(app.getAppPath(), 'buildResources', 'icons', iconName),
       resolve(app.getAppPath(), 'buildResources', 'icon.png'),
-      resolve(app.getAppPath(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(app.getAppPath(), '..', 'buildResources', 'icons', iconName),
       resolve(app.getAppPath(), '..', 'buildResources', 'icon.png'),
-      resolve(app.getAppPath(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(app.getAppPath(), '..', '..', 'buildResources', 'icons', iconName),
       resolve(app.getAppPath(), '..', '..', 'buildResources', 'icon.png'),
     ];
 
