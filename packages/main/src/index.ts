@@ -12,8 +12,10 @@ import {trayModule} from './modules/TrayModule.js';
 
 
 export async function initApp(initConfig: AppInitConfig) {
+  const shouldOpenDevTools = import.meta.env.VITE_OPEN_DEVTOOLS === 'true';
+
   const moduleRunner = createModuleRunner()
-    .init(createWindowManagerModule({initConfig, openDevTools: import.meta.env.DEV}))
+    .init(createWindowManagerModule({initConfig, openDevTools: shouldOpenDevTools}))
     .init(disallowMultipleAppInstance())
     .init(terminateAppOnLastWindowClose())
     .init(hardwareAccelerationMode({enable: false}))

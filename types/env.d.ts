@@ -18,6 +18,9 @@ interface ImportMetaEnv {
 
   /** Current app version */
   readonly VITE_APP_VERSION: string;
+
+  /** Enable opening DevTools on app startup */
+  readonly VITE_OPEN_DEVTOOLS: undefined | string;
 }
 
 interface ImportMeta {
