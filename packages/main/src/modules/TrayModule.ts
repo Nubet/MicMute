@@ -3,13 +3,12 @@ import {resolve} from 'node:path';
 import {app, BrowserWindow, Menu, Tray, nativeImage} from 'electron';
 import type {AppModule} from '../AppModule.js';
 import type {ModuleContext} from '../ModuleContext.js';
-import {getSystemMicrophoneMuteService} from '../application/audio/getSystemMicrophoneMuteService.js';
+import {getMicrophoneMuteStateCoordinator} from '../application/audio/getMicrophoneMuteStateCoordinator.js';
 
 class TrayModule implements AppModule {
   #tray: Tray | null = null;
   #isQuitting = false;
-  #mutePollInterval: NodeJS.Timeout | null = null;
-  #lastMutedState: boolean | null = null;
+  #unsubscribeMuteState: (() => void) | null = null;
 
   async enable({app}: ModuleContext): Promise<void> {
     await app.whenReady();
@@ -17,7 +16,8 @@ class TrayModule implements AppModule {
 
     app.on('before-quit', () => {
       this.#isQuitting = true;
-      this.#stopMuteStateSync();
+      this.#unsubscribeMuteState?.();
+      this.#unsubscribeMuteState = null;
     });
 
     app.on('browser-window-created', (_, window) => {
@@ -28,7 +28,9 @@ class TrayModule implements AppModule {
       this.#wireWindowEvents(window);
     }
 
-    this.#startMuteStateSync();
+    this.#unsubscribeMuteState = getMicrophoneMuteStateCoordinator().subscribe((muted) => {
+      this.#applyTrayIcon(muted);
+    });
   }
 
   #wireWindowEvents(window: BrowserWindow): void {
@@ -97,43 +99,6 @@ class TrayModule implements AppModule {
 
     window.show();
     window.focus();
-  }
-
-  #startMuteStateSync(): void {
-    void this.#syncTrayIconWithMuteState();
-
-    this.#mutePollInterval = setInterval(() => {
-      void this.#syncTrayIconWithMuteState();
-    }, 1000);
-  }
-
-  #stopMuteStateSync(): void {
-    if (!this.#mutePollInterval) {
-      return;
-    }
-
-    clearInterval(this.#mutePollInterval);
-    this.#mutePollInterval = null;
-  }
-
-  async #syncTrayIconWithMuteState(): Promise<void> {
-    if (!this.#tray || this.#isQuitting) {
-      return;
-    }
-
-    try {
-      const muted = await getSystemMicrophoneMuteService().getMuteState();
-
-      if (this.#lastMutedState === muted) {
-        return;
-      }
-
-      this.#lastMutedState = muted;
-      this.#applyTrayIcon(muted);
-    } catch {
-      this.#lastMutedState = null;
-      this.#applyTrayIcon(false);
-    }
   }
 
   #applyTrayIcon(muted: boolean): void {

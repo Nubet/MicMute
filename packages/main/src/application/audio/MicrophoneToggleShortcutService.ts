@@ -1,7 +1,7 @@
 import {mkdirSync, readFileSync, writeFileSync} from 'node:fs';
 import {dirname, join} from 'node:path';
 import {app, globalShortcut} from 'electron';
-import {getSystemMicrophoneMuteService} from './getSystemMicrophoneMuteService.js';
+import {getMicrophoneMuteStateCoordinator} from './getMicrophoneMuteStateCoordinator.js';
 
 type PersistedSettings = {
   microphoneToggleShortcut: string | null;
@@ -68,8 +68,6 @@ export class MicrophoneToggleShortcutService {
   }
 
   async #toggleSystemMute(): Promise<void> {
-    const service = getSystemMicrophoneMuteService();
-    const current = await service.getMuteState();
-    await service.setMuteState(!current);
+    await getMicrophoneMuteStateCoordinator().toggleState();
   }
 }
