@@ -2,6 +2,8 @@ import type {AppModule} from '../AppModule.js';
 import {ModuleContext} from '../ModuleContext.js';
 import {BrowserWindow} from 'electron';
 import type {AppInitConfig} from '../AppInitConfig.js';
+import {existsSync} from 'node:fs';
+import {resolve} from 'node:path';
 
 class WindowManager implements AppModule {
   readonly #preload: {path: string};
@@ -22,9 +24,12 @@ class WindowManager implements AppModule {
   }
 
   async createWindow(): Promise<BrowserWindow> {
+    const windowIconPath = this.#resolveWindowIconPath();
+
     const browserWindow = new BrowserWindow({
       show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
       autoHideMenuBar: true,
+      ...(windowIconPath ? {icon: windowIconPath} : {}),
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -69,6 +74,25 @@ class WindowManager implements AppModule {
     window.focus();
 
     return window;
+  }
+
+  #resolveWindowIconPath(): string | null {
+    const candidates = [
+      resolve(process.cwd(), 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), 'buildResources', 'icon.png'),
+      resolve(process.cwd(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', 'buildResources', 'icon.png'),
+      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', '..', 'buildResources', 'icon.png'),
+    ];
+
+    for (const candidate of candidates) {
+      if (existsSync(candidate)) {
+        return candidate;
+      }
+    }
+
+    return null;
   }
 
 }

@@ -10,6 +10,9 @@ export default /** @type import('electron-builder').Configuration */
     buildResources: 'buildResources',
   },
   generateUpdatesFilesForAllChannels: true,
+  win: {
+    icon: 'buildResources/icons/tray-idle.ico',
+  },
   linux: {
     target: ['deb'],
   },
