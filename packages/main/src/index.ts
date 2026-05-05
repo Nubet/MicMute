@@ -10,6 +10,7 @@ import {allowExternalUrls} from './modules/ExternalUrls.js';
 import {systemMicrophoneModule} from './modules/SystemMicrophoneModule.js';
 import {trayModule} from './modules/TrayModule.js';
 import {microphoneShortcutModule} from './modules/MicrophoneShortcutModule.js';
+import {startupSettingsModule} from './modules/StartupSettingsModule.js';
 
 
 export async function initApp(initConfig: AppInitConfig) {
@@ -23,6 +24,7 @@ export async function initApp(initConfig: AppInitConfig) {
     .init(autoUpdater())
     .init(systemMicrophoneModule())
     .init(microphoneShortcutModule())
+    .init(startupSettingsModule())
     .init(trayModule())
 
     // Install DevTools extension if needed
