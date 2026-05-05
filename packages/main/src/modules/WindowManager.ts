@@ -24,6 +24,7 @@ class WindowManager implements AppModule {
   async createWindow(): Promise<BrowserWindow> {
     const browserWindow = new BrowserWindow({
       show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
+      autoHideMenuBar: true,
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
@@ -38,6 +39,8 @@ class WindowManager implements AppModule {
     } else {
       await browserWindow.loadFile(this.#renderer.path);
     }
+
+    browserWindow.setMenuBarVisibility(false);
 
     return browserWindow;
   }
