@@ -37,3 +37,20 @@ export async function getStartupSettings(): Promise<{supported: boolean, openAtL
 export async function setStartupOpenAtLogin(enabled: boolean): Promise<{supported: boolean, openAtLogin: boolean}> {
   return getElectronApi().setStartupOpenAtLogin(enabled);
 }
+
+export async function getNotificationSettings(): Promise<{
+  showTrayNotificationOnMuteChange: boolean;
+  playSoundOnMuteToggle: boolean;
+}> {
+  return getElectronApi().getNotificationSettings();
+}
+
+export async function updateNotificationSettings(patch: {
+  showTrayNotificationOnMuteChange?: boolean;
+  playSoundOnMuteToggle?: boolean;
+}): Promise<{
+  showTrayNotificationOnMuteChange: boolean;
+  playSoundOnMuteToggle: boolean;
+}> {
+  return getElectronApi().updateNotificationSettings(patch);
+}

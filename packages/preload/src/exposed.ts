@@ -1,10 +1,12 @@
 import {contextBridge} from 'electron';
 import {
+  getNotificationSettings,
   getStartupSettings,
   getMicrophoneMuteState,
   getMicrophoneToggleShortcut,
   onMicrophoneMuteStateChanged,
   setStartupOpenAtLogin,
+  updateNotificationSettings,
   setMicrophoneMuteState,
   setMicrophoneToggleShortcut,
   toggleMicrophoneMuteState,
@@ -20,6 +22,8 @@ const electronApi: SystemMicrophoneApi = {
   setMicrophoneToggleShortcut,
   getStartupSettings,
   setStartupOpenAtLogin,
+  getNotificationSettings,
+  updateNotificationSettings,
 };
 
 contextBridge.exposeInMainWorld('electronApi', electronApi);
