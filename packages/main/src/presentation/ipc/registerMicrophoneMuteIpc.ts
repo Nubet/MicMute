@@ -1,13 +1,17 @@
 import {ipcMain} from 'electron';
 import {MICROPHONE_IPC_CHANNELS} from '@app/shared';
-import {SystemMicrophoneMuteService} from '../../application/audio/SystemMicrophoneMuteService.js';
+import {MicrophoneMuteStateCoordinator} from '../../application/audio/MicrophoneMuteStateCoordinator.js';
 
-export function registerMicrophoneMuteIpc(service: SystemMicrophoneMuteService): void {
+export function registerMicrophoneMuteIpc(coordinator: MicrophoneMuteStateCoordinator): void {
   ipcMain.handle(MICROPHONE_IPC_CHANNELS.getMuteState, async () => {
-    return service.getMuteState();
+    return coordinator.getState();
   });
 
   ipcMain.handle(MICROPHONE_IPC_CHANNELS.setMuteState, async (_, muted: boolean) => {
-    return service.setMuteState(muted);
+    return coordinator.setState(muted);
+  });
+
+  ipcMain.handle(MICROPHONE_IPC_CHANNELS.toggleMuteState, async () => {
+    return coordinator.toggleState();
   });
 }
