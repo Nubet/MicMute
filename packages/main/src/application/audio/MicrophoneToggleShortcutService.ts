@@ -1,17 +1,13 @@
-import {mkdirSync, readFileSync, writeFileSync} from 'node:fs';
-import {dirname, join} from 'node:path';
-import {app, globalShortcut} from 'electron';
+import {globalShortcut} from 'electron';
 import {getMicrophoneMuteStateCoordinator} from './getMicrophoneMuteStateCoordinator.js';
-
-type PersistedSettings = {
-  microphoneToggleShortcut: string | null;
-};
+import {AppSettingsStore} from '../settings/AppSettingsStore.js';
 
 export class MicrophoneToggleShortcutService {
   #activeShortcut: string | null = null;
+  readonly #settingsStore = new AppSettingsStore();
 
   async initialize(): Promise<void> {
-    const persistedShortcut = this.#readSettings().microphoneToggleShortcut;
+    const persistedShortcut = this.#settingsStore.read().microphoneToggleShortcut;
     await this.setShortcut(persistedShortcut);
   }
 
@@ -26,7 +22,8 @@ export class MicrophoneToggleShortcutService {
 
     if (!accelerator) {
       this.#activeShortcut = null;
-      this.#writeSettings({microphoneToggleShortcut: null});
+      const settings = this.#settingsStore.read();
+      this.#settingsStore.write({...settings, microphoneToggleShortcut: null});
       return null;
     }
 
@@ -39,32 +36,9 @@ export class MicrophoneToggleShortcutService {
     }
 
     this.#activeShortcut = accelerator;
-    this.#writeSettings({microphoneToggleShortcut: accelerator});
+    const settings = this.#settingsStore.read();
+    this.#settingsStore.write({...settings, microphoneToggleShortcut: accelerator});
     return this.#activeShortcut;
-  }
-
-  #settingsPath(): string {
-    return join(app.getPath('userData'), 'settings.json');
-  }
-
-  #readSettings(): PersistedSettings {
-    const path = this.#settingsPath();
-
-    try {
-      const raw = readFileSync(path, 'utf-8');
-      const parsed = JSON.parse(raw) as Partial<PersistedSettings>;
-      return {
-        microphoneToggleShortcut: parsed.microphoneToggleShortcut ?? null,
-      };
-    } catch {
-      return {microphoneToggleShortcut: null};
-    }
-  }
-
-  #writeSettings(settings: PersistedSettings): void {
-    const path = this.#settingsPath();
-    mkdirSync(dirname(path), {recursive: true});
-    writeFileSync(path, JSON.stringify(settings, null, 2), 'utf-8');
   }
 
   async #toggleSystemMute(): Promise<void> {

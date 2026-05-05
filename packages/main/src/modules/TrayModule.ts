@@ -30,6 +30,7 @@ class TrayModule implements AppModule {
 
     this.#unsubscribeMuteState = getMicrophoneMuteStateCoordinator().subscribe((muted) => {
       this.#applyTrayIcon(muted);
+      this.#tray?.setToolTip(muted ? 'Microphone: Muted' : 'Microphone: Active');
     });
   }
 
