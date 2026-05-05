@@ -23,9 +23,13 @@ type Props = {
   isSavingShortcut: boolean;
   error: string | null;
   shortcutError: string | null;
+  startupSettings: {supported: boolean, openAtLogin: boolean};
+  isSavingStartup: boolean;
+  startupError: string | null;
   onMicrophoneChange: (deviceId: string) => Promise<void>;
   onToggleMute: () => Promise<void>;
   onSaveShortcut: (shortcut: string | null) => Promise<string | null>;
+  onToggleStartupOpenAtLogin: (enabled: boolean) => Promise<{supported: boolean, openAtLogin: boolean}>;
 };
 
 function keyToAccelerator(key: string): string {
@@ -75,11 +79,15 @@ export function MicrophonePanel({
   isSavingShortcut,
   error,
   shortcutError,
+  startupSettings,
+  isSavingStartup,
+  startupError,
   onMicrophoneChange,
   onToggleMute,
   onSaveShortcut,
+  onToggleStartupOpenAtLogin,
 }: Props) {
-  const [activeSection, setActiveSection] = useState<'audio' | 'shortcuts'>('audio');
+  const [activeSection, setActiveSection] = useState<'audio' | 'shortcuts' | 'startup'>('audio');
   const [isCapturingShortcut, setIsCapturingShortcut] = useState(false);
   const [draftShortcut, setDraftShortcut] = useState<string | null>(shortcut);
 
@@ -170,7 +178,11 @@ export function MicrophonePanel({
               <span className="icon" aria-hidden="true"><Keyboard size={14} strokeWidth={1.8} /></span>
               <span>Shortcuts</span>
             </button>
-            <button type="button" className="nav-item">
+            <button
+              type="button"
+              className={`nav-item ${activeSection === 'startup' ? 'active' : ''}`}
+              onClick={() => setActiveSection('startup')}
+            >
               <span className="icon" aria-hidden="true"><Play size={14} strokeWidth={1.8} /></span>
               <span>Startup</span>
             </button>
@@ -237,7 +249,7 @@ export function MicrophonePanel({
                   </>
                 )}
               </>
-            ) : (
+            ) : activeSection === 'shortcuts' ? (
               <>
                 <div className="section-header">
                   <h2>Shortcuts</h2>
@@ -283,6 +295,28 @@ export function MicrophonePanel({
                     </button>
                   </div>
                   {shortcutError ? <p className="error-text">{shortcutError}</p> : null}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="section-header">
+                  <h2>Startup</h2>
+                </div>
+
+                <div className="shortcut-card">
+                  <p className="field-label">Run app at system startup</p>
+                  <p className="shortcut-value">{startupSettings.supported ? (startupSettings.openAtLogin ? 'Enabled' : 'Disabled') : 'Not supported on this platform'}</p>
+                  <div className="action-row">
+                    <button
+                      type="button"
+                      className="toolbar-button"
+                      onClick={() => void onToggleStartupOpenAtLogin(!startupSettings.openAtLogin)}
+                      disabled={!startupSettings.supported || isSavingStartup}
+                    >
+                      {isSavingStartup ? 'Saving...' : startupSettings.openAtLogin ? 'Disable auto-run' : 'Enable auto-run'}
+                    </button>
+                  </div>
+                  {startupError ? <p className="error-text">{startupError}</p> : null}
                 </div>
               </>
             )}
