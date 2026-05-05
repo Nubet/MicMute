@@ -254,6 +254,38 @@ h2 {
   cursor: not-allowed;
 }
 
+.shortcut-card {
+  border: 1px solid #2f3745;
+  border-radius: 8px;
+  padding: 10px;
+  background: #121923;
+  display: grid;
+  gap: 8px;
+}
+
+.shortcut-value {
+  margin: 0;
+  font-size: 13px;
+  color: #e2e8f4;
+  font-weight: 600;
+}
+
+.shortcut-capture {
+  width: 100%;
+  border: 1px solid #3a4352;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: #d6dcea;
+  background: #111721;
+}
+
+.shortcut-capture:focus {
+  outline: 2px solid #6d8cff;
+  outline-offset: 0;
+}
+
 .error-text,
 .empty-state {
   margin: 0;

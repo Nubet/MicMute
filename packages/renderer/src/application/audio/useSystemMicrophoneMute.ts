@@ -53,6 +53,14 @@ export function useSystemMicrophoneMute() {
     };
 
     void loadMuteState();
+
+    const interval = window.setInterval(() => {
+      void loadMuteState();
+    }, 1000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
   }, [refreshMuteState]);
 
   return {

@@ -9,6 +9,7 @@ import {allowInternalOrigins} from './modules/BlockNotAllowdOrigins.js';
 import {allowExternalUrls} from './modules/ExternalUrls.js';
 import {systemMicrophoneModule} from './modules/SystemMicrophoneModule.js';
 import {trayModule} from './modules/TrayModule.js';
+import {microphoneShortcutModule} from './modules/MicrophoneShortcutModule.js';
 
 
 export async function initApp(initConfig: AppInitConfig) {
@@ -21,6 +22,7 @@ export async function initApp(initConfig: AppInitConfig) {
     .init(hardwareAccelerationMode({enable: false}))
     .init(autoUpdater())
     .init(systemMicrophoneModule())
+    .init(microphoneShortcutModule())
     .init(trayModule())
 
     // Install DevTools extension if needed

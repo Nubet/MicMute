@@ -15,4 +15,20 @@ function setMicrophoneMuteState(muted: boolean) {
   return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setMuteState, muted);
 }
 
-export {sha256sum, versions, send, getMicrophoneMuteState, setMicrophoneMuteState};
+function getMicrophoneToggleShortcut() {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.getToggleShortcut);
+}
+
+function setMicrophoneToggleShortcut(accelerator: string | null) {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setToggleShortcut, accelerator);
+}
+
+export {
+  sha256sum,
+  versions,
+  send,
+  getMicrophoneMuteState,
+  setMicrophoneMuteState,
+  getMicrophoneToggleShortcut,
+  setMicrophoneToggleShortcut,
+};
