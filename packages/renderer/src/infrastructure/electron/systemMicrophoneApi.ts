@@ -14,6 +14,14 @@ export async function setSystemMicrophoneMuteState(muted: boolean): Promise<bool
   return getElectronApi().setMicrophoneMuteState(muted);
 }
 
+export async function toggleSystemMicrophoneMuteState(): Promise<boolean> {
+  return getElectronApi().toggleMicrophoneMuteState();
+}
+
+export function onSystemMicrophoneMuteStateChanged(listener: (muted: boolean) => void): () => void {
+  return getElectronApi().onMicrophoneMuteStateChanged(listener);
+}
+
 export async function getMicrophoneToggleShortcut(): Promise<string | null> {
   return getElectronApi().getMicrophoneToggleShortcut();
 }

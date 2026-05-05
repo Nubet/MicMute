@@ -15,6 +15,22 @@ function setMicrophoneMuteState(muted: boolean) {
   return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.setMuteState, muted);
 }
 
+function toggleMicrophoneMuteState() {
+  return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.toggleMuteState);
+}
+
+function onMicrophoneMuteStateChanged(listener: (muted: boolean) => void) {
+  const wrappedListener = (_event: unknown, muted: boolean) => {
+    listener(muted);
+  };
+
+  ipcRenderer.on(MICROPHONE_IPC_CHANNELS.muteStateChanged, wrappedListener);
+
+  return () => {
+    ipcRenderer.removeListener(MICROPHONE_IPC_CHANNELS.muteStateChanged, wrappedListener);
+  };
+}
+
 function getMicrophoneToggleShortcut() {
   return ipcRenderer.invoke(MICROPHONE_IPC_CHANNELS.getToggleShortcut);
 }
@@ -37,6 +53,8 @@ export {
   send,
   getMicrophoneMuteState,
   setMicrophoneMuteState,
+  toggleMicrophoneMuteState,
+  onMicrophoneMuteStateChanged,
   getMicrophoneToggleShortcut,
   setMicrophoneToggleShortcut,
   getStartupSettings,
