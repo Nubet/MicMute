@@ -95,11 +95,17 @@ class TrayModule implements AppModule {
 
   #resolveTrayIconPath(): string | null {
     const candidates = [
+      resolve(process.cwd(), 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(process.cwd(), 'buildResources', 'icon.png'),
+      resolve(process.cwd(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(process.cwd(), '..', 'buildResources', 'icon.png'),
+      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(process.cwd(), '..', '..', 'buildResources', 'icon.png'),
+      resolve(app.getAppPath(), 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(app.getAppPath(), 'buildResources', 'icon.png'),
+      resolve(app.getAppPath(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(app.getAppPath(), '..', 'buildResources', 'icon.png'),
+      resolve(app.getAppPath(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
       resolve(app.getAppPath(), '..', '..', 'buildResources', 'icon.png'),
     ];
 
