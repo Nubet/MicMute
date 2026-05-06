@@ -1,0 +1,80 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 23
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows artifacts
+        run: npm run compile:win
+
+      - name: Generate SHA256 checksums
+        shell: pwsh
+        run: |
+          $artifacts = Get-ChildItem -Path dist -File | Where-Object {
+            $_.Extension -in @('.exe', '.blockmap', '.yml')
+          }
+          if (-not $artifacts) {
+            throw 'No release artifacts found in dist/'
+          }
+
+          $lines = foreach ($file in $artifacts) {
+            $hash = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($file.Name)"
+          }
+
+          $lines | Set-Content -Path dist/SHA256SUMS.txt -NoNewline:$false
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.9.1
+
+      - name: Sign release artifacts with Cosign keyless
+        shell: pwsh
+        run: |
+          $filesToSign = Get-ChildItem -Path dist -File | Where-Object {
+            $_.Extension -in @('.exe', '.blockmap', '.yml', '.txt')
+          }
+
+          foreach ($file in $filesToSign) {
+            cosign sign-blob --yes --output-signature "$($file.FullName).sig" --output-certificate "$($file.FullName).pem" "$($file.FullName)"
+          }
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/*.yml
+            dist/SHA256SUMS.txt
+            dist/*.exe.sig
+            dist/*.exe.pem
+            dist/*.blockmap.sig
+            dist/*.blockmap.pem
+            dist/*.yml.sig
+            dist/*.yml.pem
+            dist/SHA256SUMS.txt.sig
+            dist/SHA256SUMS.txt.pem
