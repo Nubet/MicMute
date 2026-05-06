@@ -29,23 +29,6 @@ jobs:
       - name: Build Windows artifacts
         run: node scripts/verify-win-packaging-tools.mjs && npm run build && npx electron-builder build --config electron-builder.mjs --win --publish never
 
-      - name: Generate SHA256 checksums
-        shell: pwsh
-        run: |
-          $artifacts = Get-ChildItem -Path dist -File | Where-Object {
-            $_.Extension -in @('.exe', '.blockmap', '.yml')
-          }
-          if (-not $artifacts) {
-            throw 'No release artifacts found in dist/'
-          }
-
-          $lines = foreach ($file in $artifacts) {
-            $hash = (Get-FileHash -Path $file.FullName -Algorithm SHA256).Hash.ToLower()
-            "$hash  $($file.Name)"
-          }
-
-          $lines | Set-Content -Path dist/SHA256SUMS.txt -NoNewline:$false
-
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3.9.1
 
@@ -53,11 +36,11 @@ jobs:
         shell: pwsh
         run: |
           $filesToSign = Get-ChildItem -Path dist -File | Where-Object {
-            $_.Extension -in @('.exe', '.blockmap', '.yml', '.txt')
+            $_.Extension -in @('.exe', '.blockmap', '.yml') -and $_.Name -notlike 'builder-debug.yml'
           }
 
           foreach ($file in $filesToSign) {
-            cosign sign-blob --yes --output-signature "$($file.FullName).sig" --output-certificate "$($file.FullName).pem" "$($file.FullName)"
+            cosign sign-blob --yes --bundle "$($file.FullName).bundle" "$($file.FullName)"
           }
 
       - name: Publish GitHub release
@@ -68,13 +51,5 @@ jobs:
           files: |
             dist/*.exe
             dist/*.blockmap
-            dist/*.yml
-            dist/SHA256SUMS.txt
-            dist/*.exe.sig
-            dist/*.exe.pem
-            dist/*.blockmap.sig
-            dist/*.blockmap.pem
-            dist/*.yml.sig
-            dist/*.yml.pem
-            dist/SHA256SUMS.txt.sig
-            dist/SHA256SUMS.txt.pem
+            dist/latest.yml
+            dist/*.bundle
