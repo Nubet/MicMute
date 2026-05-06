@@ -27,6 +27,7 @@ class WindowManager implements AppModule {
     const windowIconPath = this.#resolveWindowIconPath();
 
     const browserWindow = new BrowserWindow({
+      title: 'MicMute',
       show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
       autoHideMenuBar: true,
       ...(windowIconPath ? {icon: windowIconPath} : {}),

@@ -150,8 +150,8 @@ export function MicrophonePanel({
       <section className="window-frame">
         <header className="window-toolbar">
           <div className="window-title-wrap">
-            <p className="window-caption">Microphone Utility</p>
-            <h1>Input Control</h1>
+            <p className="window-caption">MicMute</p>
+            <h1>Microphone Controls</h1>
           </div>
         </header>
 
