@@ -12,6 +12,7 @@ import {trayModule} from './modules/TrayModule.js';
 import {microphoneShortcutModule} from './modules/MicrophoneShortcutModule.js';
 import {startupSettingsModule} from './modules/StartupSettingsModule.js';
 import {notificationSettingsModule} from './modules/NotificationSettingsModule.js';
+import {linuxGlobalShortcutsPortalModule} from './modules/LinuxGlobalShortcutsPortalModule.js';
 
 
 export async function initApp(initConfig: AppInitConfig) {
@@ -22,6 +23,7 @@ export async function initApp(initConfig: AppInitConfig) {
     .init(disallowMultipleAppInstance())
     .init(terminateAppOnLastWindowClose())
     .init(hardwareAccelerationMode({enable: false}))
+    .init(linuxGlobalShortcutsPortalModule())
     .init(autoUpdater())
     .init(systemMicrophoneModule())
     .init(microphoneShortcutModule())

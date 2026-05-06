@@ -8,7 +8,15 @@ export class MicrophoneToggleShortcutService {
 
   async initialize(): Promise<void> {
     const persistedShortcut = this.#settingsStore.read().microphoneToggleShortcut;
-    await this.setShortcut(persistedShortcut);
+    if (!persistedShortcut) {
+      return;
+    }
+
+    try {
+      await this.setShortcut(persistedShortcut);
+    } catch (error) {
+      console.warn('[MicrophoneToggleShortcutService] Failed to initialize shortcut:', error);
+    }
   }
 
   getShortcut(): string | null {
@@ -16,15 +24,25 @@ export class MicrophoneToggleShortcutService {
   }
 
   async setShortcut(accelerator: string | null): Promise<string | null> {
-    if (this.#activeShortcut) {
-      globalShortcut.unregister(this.#activeShortcut);
+    const previousShortcut = this.#activeShortcut;
+
+    if (accelerator === previousShortcut) {
+      return previousShortcut;
     }
 
     if (!accelerator) {
+      if (previousShortcut) {
+        globalShortcut.unregister(previousShortcut);
+      }
+
       this.#activeShortcut = null;
       const settings = this.#settingsStore.read();
       this.#settingsStore.write({...settings, microphoneToggleShortcut: null});
       return null;
+    }
+
+    if (isGnomeWaylandSession()) {
+      throw new Error('Global shortcuts are not supported on GNOME Wayland. Use an X11 session or a desktop environment with GlobalShortcuts portal support.');
     }
 
     const registered = globalShortcut.register(accelerator, () => {
@@ -32,7 +50,16 @@ export class MicrophoneToggleShortcutService {
     });
 
     if (!registered) {
-      throw new Error('Shortcut could not be registered. It may already be used by another app.');
+      const isWayland = process.platform === 'linux' && Boolean(process.env.WAYLAND_DISPLAY);
+      const details = isWayland
+        ? ' On Wayland, global shortcuts may require desktop portal support.'
+        : '';
+
+      throw new Error(`Shortcut could not be registered. It may already be used by another app or unavailable on this desktop environment.${details}`);
+    }
+
+    if (previousShortcut) {
+      globalShortcut.unregister(previousShortcut);
     }
 
     this.#activeShortcut = accelerator;
@@ -44,4 +71,16 @@ export class MicrophoneToggleShortcutService {
   async #toggleSystemMute(): Promise<void> {
     await getMicrophoneMuteStateCoordinator().toggleState();
   }
+}
+
+function isGnomeWaylandSession(): boolean {
+  if (process.platform !== 'linux') {
+    return false;
+  }
+
+  const isWayland = Boolean(process.env.WAYLAND_DISPLAY);
+  const desktop = (process.env.XDG_CURRENT_DESKTOP || process.env.DESKTOP_SESSION || '').toLowerCase();
+  const isGnome = desktop.includes('gnome');
+
+  return isWayland && isGnome;
 }
