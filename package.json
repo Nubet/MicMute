@@ -1,13 +1,13 @@
 {
-  "name": "root",
+  "name": "MicMute",
   "description": "Secure boilerplate for Electron app based on Vite",
-  "version": "3.1.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "author": {
-    "email": "kozackunisoft@gmail.com",
-    "name": "Alex Kozack",
-    "url": "https://kozack.me"
+    "email": "nubet2137@gmail.com",
+    "name": "Norbert Fila",
+    "url": "https://norbertfila.com"
   },
   "main": "packages/entry-point.mjs",
   "workspaces": [
@@ -20,6 +20,7 @@
     "build": "npm run build -ws --if-present",
     "compile": "npm run build && electron-builder build --config electron-builder.mjs",
     "compile:linux": "node scripts/verify-linux-packaging-tools.mjs && npm run build && electron-builder build --config electron-builder.mjs --linux",
+    "compile:win": "node scripts/verify-win-packaging-tools.mjs && npm run build && electron-builder build --config electron-builder.mjs --win",
     "test": "npx playwright test ./tests/e2e.spec.ts",
     "start": "node packages/dev-mode.js",
     "typecheck": "npm run typecheck -ws --if-present",
