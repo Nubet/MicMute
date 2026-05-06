@@ -28,6 +28,16 @@ class WindowManager implements AppModule {
 
     const browserWindow = new BrowserWindow({
       title: 'MicMute',
+      width: 420,
+      height: 460,
+      minWidth: 420,
+      maxWidth: 420,
+      minHeight: 460,
+      maxHeight: 460,
+      useContentSize: true,
+      resizable: false,
+      maximizable: false,
+      fullscreenable: false,
       show: false, // Use the 'ready-to-show' event to show the instantiated BrowserWindow.
       autoHideMenuBar: true,
       ...(windowIconPath ? {icon: windowIconPath} : {}),
