@@ -97,3 +97,13 @@ Latest releases: https://github.com/Nubet/MicMute/releases
   - For `.rpm` builds on Linux, ensure `rpmbuild` is installed:
     - Fedora/RHEL: `sudo dnf install rpm-build`
     - Debian/Ubuntu: `sudo apt-get install rpm`
+
+## Screenshots
+
+| Screen | Preview | Caption |
+| --- | --- | --- |
+| Audio (live) | ![Audio tab with live mic](docs/images/audio-live.png) | Main audio controls with live microphone state and quick mute toggle. |
+| Audio (muted) | ![Audio tab with muted mic](docs/images/audio-muted.png) | Muted state view with one-click unmute action. |
+| Hotkeys | ![Hotkeys tab](docs/images/hotkeys.png) | Set or clear a global shortcut to toggle mute from anywhere. |
+| Startup | ![Startup tab](docs/images/startup.png) | Configure whether MicMute launches automatically at login. |
+| Alerts | ![Alerts tab](docs/images/alerts.png) | Toggle notification banners and mute sound effects. |
