@@ -77,6 +77,13 @@ npm run compile:win
 npm run compile:linux
 ```
 
+## Release process
+- Releases are created by GitHub Actions from tags matching `v*`.
+- Stable example: `v1.0.0`.
+- Beta example: `v1.0.0-beta.1`.
+
+Latest releases: https://github.com/Nubet/MicMute/releases
+
 ## Troubleshooting
 - **Global shortcut cannot be saved on Linux**
   - If you use GNOME on Wayland, this is an OS-level limitation.
