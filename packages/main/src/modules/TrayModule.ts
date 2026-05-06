@@ -117,7 +117,8 @@ class TrayModule implements AppModule {
   }
 
   #resolveTrayIconPath(muted: boolean): string | null {
-    const iconName = muted ? 'tray-muted.ico' : 'tray-idle.ico';
+    const iconExtension = process.platform === 'win32' ? 'ico' : 'png';
+    const iconName = muted ? `tray-muted.${iconExtension}` : `tray-idle.${iconExtension}`;
     const candidates = [
       resolve(process.cwd(), 'buildResources', 'icons', iconName),
       resolve(process.cwd(), 'buildResources', 'icon.png'),

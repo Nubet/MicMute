@@ -88,12 +88,13 @@ class WindowManager implements AppModule {
   }
 
   #resolveWindowIconPath(): string | null {
+    const trayIconName = process.platform === 'win32' ? 'tray-idle.ico' : 'tray-idle.png';
     const candidates = [
-      resolve(process.cwd(), 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), 'buildResources', 'icons', trayIconName),
       resolve(process.cwd(), 'buildResources', 'icon.png'),
-      resolve(process.cwd(), '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', 'buildResources', 'icons', trayIconName),
       resolve(process.cwd(), '..', 'buildResources', 'icon.png'),
-      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', 'tray-idle.ico'),
+      resolve(process.cwd(), '..', '..', 'buildResources', 'icons', trayIconName),
       resolve(process.cwd(), '..', '..', 'buildResources', 'icon.png'),
     ];
 
