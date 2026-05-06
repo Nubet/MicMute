@@ -6,6 +6,9 @@ import {existsSync} from 'node:fs';
 import {resolve} from 'node:path';
 
 class WindowManager implements AppModule {
+  static readonly #WINDOW_WIDTH = 420;
+  static readonly #WINDOW_HEIGHT = 460;
+
   readonly #preload: {path: string};
   readonly #renderer: {path: string} | URL;
   readonly #openDevTools;
@@ -28,12 +31,12 @@ class WindowManager implements AppModule {
 
     const browserWindow = new BrowserWindow({
       title: 'MicMute',
-      width: 420,
-      height: 460,
-      minWidth: 420,
-      maxWidth: 420,
-      minHeight: 460,
-      maxHeight: 460,
+      width: WindowManager.#WINDOW_WIDTH,
+      height: WindowManager.#WINDOW_HEIGHT,
+      minWidth: WindowManager.#WINDOW_WIDTH,
+      maxWidth: WindowManager.#WINDOW_WIDTH,
+      minHeight: WindowManager.#WINDOW_HEIGHT,
+      maxHeight: WindowManager.#WINDOW_HEIGHT,
       useContentSize: true,
       resizable: false,
       maximizable: false,
@@ -55,6 +58,24 @@ class WindowManager implements AppModule {
     } else {
       await browserWindow.loadFile(this.#renderer.path);
     }
+
+    const enforceFixedWindowBounds = () => {
+      if (browserWindow.isDestroyed()) {
+        return;
+      }
+
+      if (browserWindow.isMaximized()) {
+        browserWindow.unmaximize();
+      }
+
+      browserWindow.setMinimumSize(WindowManager.#WINDOW_WIDTH, WindowManager.#WINDOW_HEIGHT);
+      browserWindow.setMaximumSize(WindowManager.#WINDOW_WIDTH, WindowManager.#WINDOW_HEIGHT);
+      browserWindow.setContentSize(WindowManager.#WINDOW_WIDTH, WindowManager.#WINDOW_HEIGHT);
+    };
+
+    browserWindow.on('show', enforceFixedWindowBounds);
+    browserWindow.on('restore', enforceFixedWindowBounds);
+    enforceFixedWindowBounds();
 
     browserWindow.setMenuBarVisibility(false);
 
