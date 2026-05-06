@@ -15,7 +15,8 @@ export default /** @type import('electron-builder').Configuration */
     icon: 'buildResources/icons/tray-idle.ico',
   },
   linux: {
-    target: ['deb'],
+    icon: 'buildResources/icon.png',
+    target: ['deb', 'rpm'],
   },
   /**
    * It is recommended to avoid using non-standard characters such as spaces in artifact names,
