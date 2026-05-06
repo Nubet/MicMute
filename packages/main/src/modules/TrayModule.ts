@@ -39,8 +39,7 @@ class TrayModule implements AppModule {
       return;
     }
 
-    window.on('minimize', (event) => {
-      event.preventDefault();
+    window.on('minimize', () => {
       window.hide();
     });
 

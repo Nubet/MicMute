@@ -6,6 +6,7 @@
     "sourceMap": false,
     "moduleResolution": "NodeNext",
     "skipLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "strict": true,
     "isolatedModules": true,
     "types": ["node"],

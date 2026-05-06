@@ -1,1 +1,1 @@
-export * from './ipc/microphone';
+export * from './ipc/microphone.js';
