@@ -27,7 +27,7 @@ jobs:
         run: npm ci
 
       - name: Build Windows artifacts
-        run: npm run compile:win
+        run: node scripts/verify-win-packaging-tools.mjs && npm run build && npx electron-builder build --config electron-builder.mjs --win --publish never
 
       - name: Generate SHA256 checksums
         shell: pwsh
