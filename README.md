@@ -1,6 +1,8 @@
-# MicMute
+![MicMute banner](docs/images/micmute-banner.png)
 
-Multiplatform Desktop Electron app for quickly muting and unmuting your system microphone.
+# A cross-platform desktop tool for instant microphone control
+
+MicMute is a lightweight Electron-based application designed to give you total control over your system's audio.
 App combines a control panel, global shortcut support, tray integration, and startup/notification preferences.
 
 ## What you get
